@@ -197,7 +197,7 @@ void WindowShadow::init(QColor color) {
 			return;
 		}
 		ShadowByHandle.emplace(_handles[i], this);
-		SetWindowLong(_handles[i], GWL_HWNDPARENT, (LONG)_handle);
+		SetWindowLongPtr(_handles[i], GWLP_HWNDPARENT, (intptr_t)_handle);
 
 		_contexts[i] = CreateCompatibleDC(_screenContext);
 		if (!_contexts[i]) {

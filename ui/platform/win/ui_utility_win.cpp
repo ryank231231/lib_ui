@@ -36,8 +36,8 @@ void IgnoreAllActivation(not_null<QWidget*> widget) {
 	Assert(handle != nullptr);
 
 	ShowWindow(handle, SW_HIDE);
-	const auto style = GetWindowLong(handle, GWL_EXSTYLE);
-	SetWindowLong(
+	const auto style = GetWindowLongPtr(handle, GWL_EXSTYLE);
+	SetWindowLongPtr(
 		handle,
 		GWL_EXSTYLE,
 		style | WS_EX_NOACTIVATE | WS_EX_APPWINDOW);
