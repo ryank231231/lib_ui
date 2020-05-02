@@ -192,17 +192,6 @@ void StartFonts() {
 #endif // Q_OS_WIN
 	}
 
-#ifdef Q_OS_WIN
-	auto list = QStringList();
-	list.append("Microsoft YaHei");
-	list.append("Microsoft JhengHei UI");
-	list.append("Yu Gothic UI");
-	list.append("\xEB\xA7\x91\xEC\x9D\x80 \xEA\xB3\xA0\xEB\x94\x95");
-	for (const auto &name : FontTypeNames) {
-		QFont::insertSubstitutions(name, list);
-	}
-#endif // Q_OS_WIN
-
 #ifdef Q_OS_MAC
 	auto list = QStringList();
 	list.append("STIXGeneral");
@@ -288,17 +277,17 @@ FontData::FontData(int size, uint32 flags, int family, Font *other)
 		f.setFamily(GetFontOverride(flags));
 	}
 
-#ifdef DESKTOP_APP_USE_PACKAGED_FONTS
-	if (_flags & FontSemibold) {
-		f.setWeight(QFont::DemiBold);
-	}
-#endif // DESKTOP_APP_USE_PACKAGED_FONTS
-
 	f.setPixelSize(size);
 	f.setBold(_flags & FontBold);
 	f.setItalic(_flags & FontItalic);
 	f.setUnderline(_flags & FontUnderline);
 	f.setStrikeOut(_flags & FontStrikeOut);
+
+#ifdef DESKTOP_APP_USE_PACKAGED_FONTS
+	if (_flags & FontSemibold) {
+		f.setWeight(QFont::DemiBold);
+	}
+#endif // DESKTOP_APP_USE_PACKAGED_FONTS
 
 	m = QFontMetrics(f);
 	height = m.height();
