@@ -70,7 +70,7 @@ bool WindowHelper::NativeFilter::nativeEventFilter(
 			msg->message,
 			msg->wParam,
 			msg->lParam,
-			(LRESULT*)result)
+			reinterpret_cast<LRESULT*>(result))
 		: false;
 }
 
