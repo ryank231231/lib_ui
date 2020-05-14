@@ -317,13 +317,12 @@ FontData::FontData(int size, uint32 flags, int family, Font *other)
 	f.setUnderline(_flags & FontUnderline);
 	f.setStrikeOut(_flags & FontStrikeOut);
 
-	if ((_flags & FontBold) || (_flags & FontSemibold)) {
-#ifdef DESKTOP_APP_USE_PACKAGED_FONTS
-		f.setWeight(QFont::DemiBold);
-#else // DESKTOP_APP_USE_PACKAGED_FONTS
-		// f.setBold(true);
+	if (_flags & FontBold) {
+		f.setBold(true);
+	}
+
+	if (_flags & FontSemibold) {
 		f.setStyleName("Semibold");
-#endif // !DESKTOP_APP_USE_PACKAGED_FONTS
 	}
 
 	m = QFontMetrics(f);
