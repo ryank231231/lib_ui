@@ -325,6 +325,12 @@ FontData::FontData(int size, uint32 flags, int family, Font *other)
 		f.setStyleName("Semibold");
 	}
 
+	if (_flags & FontItalic) {
+		f.setStyleName("Semibold Italic");
+	} else {
+		f.setStyleName("Semibold");
+	}
+
 	m = QFontMetrics(f);
 	height = m.height();
 	ascent = m.ascent();
