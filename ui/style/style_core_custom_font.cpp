@@ -49,7 +49,13 @@ QFont ResolveFont(uint32 flags, int size) {
 #ifdef DESKTOP_APP_USE_PACKAGED_FONTS
 			result.setWeight(QFont::DemiBold);
 #else // DESKTOP_APP_USE_PACKAGED_FONTS
-			result.setBold(true);
+			if (flags & FontBold) {
+				result.setBold(true);
+			}
+
+			if (flags & FontSemibold) {
+				result.setStyleName("Semibold");
+			}
 #endif // !DESKTOP_APP_USE_PACKAGED_FONTS
 
 			if (flags & FontItalic) {
