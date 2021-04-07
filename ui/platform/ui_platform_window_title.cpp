@@ -38,14 +38,17 @@ void RemoveDuplicates(std::vector<T> &v) {
 TitleControls::TitleControls(
 	not_null<RpWidget*> parent,
 	const style::WindowTitle &st,
-	Fn<void(bool maximized)> maximize)
+	Fn<void(bool maximized)> maximize,
+	bool hasOnTop)
 : _st(&st)
+, _top(parent, _st->top)
 , _minimize(parent, _st->minimize)
 , _maximizeRestore(parent, _st->maximize)
 , _close(parent, _st->close)
 , _maximizedState(parent->windowState()
 	& (Qt::WindowMaximized | Qt::WindowFullScreen))
-, _activeState(parent->isActiveWindow()) {
+, _activeState(parent->isActiveWindow())
+, _hasOnTop(hasOnTop) {
 	init(std::move(maximize));
 
 	_close->paintRequest(
@@ -89,6 +92,18 @@ not_null<QWidget*> TitleControls::window() const {
 }
 
 void TitleControls::init(Fn<void(bool maximized)> maximize) {
+	if (_top) {
+		_top->setClickedCallback([=]() {
+			window()->setWindowFlags(_topState
+				? (window()->windowFlags() | Qt::WindowStaysOnBottomHint)
+				: Qt::WindowStaysOnTopHint);
+			window()->show();
+			_topState = !_topState;
+			updateButtonsState();
+		});
+		_top->setPointerCursor(false);
+	}
+
 	_minimize->setClickedCallback([=] {
 		window()->setWindowState(
 			window()->windowState() | Qt::WindowMinimized);
@@ -168,6 +183,7 @@ Ui::IconButton *TitleControls::controlWidget(Control control) const {
 	case Control::Minimize: return _minimize;
 	case Control::Maximize: return _maximizeRestore;
 	case Control::Close: return _close;
+	case Control::OnTop: return _top;
 	}
 
 	return nullptr;
@@ -214,6 +230,10 @@ void TitleControls::updateControlsPosition() {
 		eraseControl(Control::Maximize);
 	}
 
+	if (!_hasOnTop) {
+		eraseControl(Control::OnTop);
+	}
+
 	if (controlPresent(Control::Minimize)) {
 		_minimize->show();
 	} else {
@@ -230,6 +250,12 @@ void TitleControls::updateControlsPosition() {
 		_close->show();
 	} else {
 		_close->hide();
+	}
+
+	if (controlPresent(Control::OnTop)) {
+		_top->show();
+	} else {
+		_top->hide();
 	}
 
 	updateControlsPositionBySide(controlsLeft, false);
@@ -307,11 +333,21 @@ void TitleControls::updateButtonsState() {
 		? &_st->closeIconActiveOver
 		: &_st->close.iconOver;
 	_close->setIconOverride(close, closeOver);
+
+	if (_top) {
+		const auto top = _activeState
+			? (_topState ? &_st->topIconActive : &_st->top2IconActive)
+			: (_topState ? &_st->top.icon : &_st->top2Icon);
+		const auto topOver = _activeState
+			? (_topState ? &_st->topIconActiveOver : &_st->top2IconActiveOver)
+			: (_topState ? &_st->top.iconOver : &_st->top2IconOver);
+		_top->setIconOverride(top, topOver);
+	}
 }
 
 DefaultTitleWidget::DefaultTitleWidget(not_null<RpWidget*> parent)
 : RpWidget(parent)
-, _controls(this, st::defaultWindowTitle)
+, _controls(this, st::defaultWindowTitle, nullptr, true)
 , _shadow(this, st::titleShadow) {
 	setAttribute(Qt::WA_OpaquePaintEvent);
 }

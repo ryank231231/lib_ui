@@ -28,7 +28,8 @@ public:
 	TitleControls(
 		not_null<RpWidget*> parent,
 		const style::WindowTitle &st,
-		Fn<void(bool maximized)> maximize = nullptr);
+		Fn<void(bool maximized)> maximize = nullptr,
+		bool hasOnTop = false);
 
 	void setStyle(const style::WindowTitle &st);
 	[[nodiscard]] not_null<const style::WindowTitle*> st() const;
@@ -41,6 +42,7 @@ public:
 		Minimize,
 		Maximize,
 		Close,
+		OnTop,
 	};
 
 	struct Layout {
@@ -64,13 +66,17 @@ private:
 
 	not_null<const style::WindowTitle*> _st;
 
+	object_ptr<Ui::IconButton> _top;
 	object_ptr<Ui::IconButton> _minimize;
 	object_ptr<Ui::IconButton> _maximizeRestore;
 	object_ptr<Ui::IconButton> _close;
 
+	bool _topState = false;
 	bool _maximizedState = false;
 	bool _activeState = false;
 	bool _resizeEnabled = true;
+
+	const bool _hasOnTop;
 
 };
 

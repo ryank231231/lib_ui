@@ -63,6 +63,7 @@ TitleControls::Layout TitleControlsLayout() {
 			TitleControls::Control::Minimize,
 			TitleControls::Control::Maximize,
 			TitleControls::Control::Close,
+			TitleControls::Control::OnTop,
 		}
 	};
 }
