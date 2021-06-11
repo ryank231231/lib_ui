@@ -12,6 +12,7 @@
 #include <QtGui/QtEvents>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QWindow>
+#include <QtGui/QPaintEngine>
 #include <QtWidgets/QOpenGLWidget>
 
 namespace Ui::GL {
@@ -30,7 +31,7 @@ public:
 private:
 	void initializeGL() override;
 	void resizeGL(int w, int h) override;
-	void paintGL() override;
+	void paintEvent(QPaintEvent *e) override;
 	void callDeInit();
 
 	const std::unique_ptr<Renderer> _renderer;
@@ -78,8 +79,31 @@ void SurfaceOpenGL::resizeGL(int w, int h) {
 	_renderer->resize(this, *context()->functions(), w, h);
 }
 
-void SurfaceOpenGL::paintGL() {
-	_renderer->paint(this, *context()->functions());
+void SurfaceOpenGL::paintEvent(QPaintEvent *e) {
+	if (!updatesEnabled() || size().isEmpty() || !isValid()) {
+		return;
+	}
+	auto redirectOffset = QPoint();
+	const auto rpd = redirected(&redirectOffset);
+	const auto device = rpd ? rpd : static_cast<QPaintDevice*>(this);
+	const auto engine = device->paintEngine();
+	if (!engine) {
+		return;
+	}
+	engine->begin(device);
+	const auto f = context()->functions();
+	if (const auto bg = _renderer->clearColor()) {
+		f->glClearColor(bg->redF(), bg->greenF(), bg->blueF(), bg->alphaF());
+		f->glClear(GL_COLOR_BUFFER_BIT);
+	}
+	f->glDisable(GL_BLEND);
+	f->glViewport(
+		0,
+		0,
+		width() * devicePixelRatio(),
+		height() * devicePixelRatio());
+	_renderer->paint(this, *f);
+	engine->end();
 }
 
 void SurfaceOpenGL::callDeInit() {
