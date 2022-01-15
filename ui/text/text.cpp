@@ -478,10 +478,23 @@ bool Parser::checkEntities() {
 				createNewlineBlock();
 			}
 		}
-		const auto end = _waitingEntity->offset() + entityLength;
+		const auto text = QString(entityBegin, entityLength);
+		auto data = QString(2, QChar(0));
+
+		// End of an entity.
+		data[0] = QChar(_waitingEntity->offset() + entityLength);
+
+		{
+			// It is better to trim the text to identify "Sample\n" as inline.
+			const auto trimmed = text.trimmed();
+			const auto isSingleLine = !trimmed.isEmpty()
+				&& ranges::none_of(trimmed, IsNewline);
+			data[1] = QChar(isSingleLine ? 1 : 2);
+		}
+
 		_monos.push_back({
-			.text = QString(entityBegin, entityLength),
-			.data = QString(QChar(end)),
+			.text = text,
+			.data = std::move(data),
 			.type = entityType,
 		});
 	} else if (entityType == EntityType::Url
@@ -740,11 +753,18 @@ void Parser::finalize(const TextParseOptions &options) {
 		}
 		const auto shiftedIndex = block->lnkIndex();
 		if (shiftedIndex <= kStringLinkIndexShift) {
-			if (IsMono(block->flags())) {
-				const auto entityEnd = int(
-					_monos[monoLnk - 1].data.constData()->unicode());
-				if (block->from() >= entityEnd) {
-					monoLnk++;
+			if (IsMono(block->flags()) && (monoLnk <= _monos.size())) {
+				{
+					const auto ptr = _monos[monoLnk - 1].data.constData();
+					const auto entityEnd = int(ptr->unicode());
+					const auto singleLine = (int((ptr + 1)->unicode()) == 1);
+					if (!singleLine) {
+						monoLnk++;
+						continue;
+					}
+					if (block->from() >= entityEnd) {
+						monoLnk++;
+					}
 				}
 				const auto monoIndex = _maxLnkIndex
 					+ _maxShiftedLnkIndex
@@ -2619,6 +2639,7 @@ private:
 		eSetFont(block);
 		if (_p) {
 			const auto isMono = IsMono(block->flags());
+			_background = {};
 			if (block->spoilerIndex()) {
 				const auto handler
 					= _t->_spoilers.at(block->spoilerIndex() - 1);
@@ -2643,14 +2664,12 @@ private:
 						*_background.color);
 					mutableCache.color = (*_background.color)->c;
 				}
-			} else if (isMono && block->lnkIndex()) {
-				_background = {
-					.selectActiveBlock = ClickHandler::showAsPressed(
-						_t->_links.at(block->lnkIndex() - 1)),
-				};
-			} else {
-				_background = {};
 			}
+			if (isMono && block->lnkIndex() && !_background.inFront) {
+				_background.selectActiveBlock = ClickHandler::showAsPressed(
+					_t->_links.at(block->lnkIndex() - 1));
+			}
+
 			if (isMono) {
 				_currentPen = &_textPalette->monoFg->p;
 				_currentPenSelected = &_textPalette->selectMonoFg->p;
@@ -3162,6 +3181,36 @@ TextSelection String::adjustSelection(TextSelection selection, TextSelectType se
 	if (from < _text.size() && from <= to) {
 		if (to > _text.size()) to = _text.size();
 		if (selectType == TextSelectType::Paragraphs) {
+
+			// Full selection of monospace entity.
+			for (const auto &b : _blocks) {
+				if (b->from() < from) {
+					continue;
+				}
+				if (!IsMono(b->flags())) {
+					break;
+				}
+				const auto &entities = toTextWithEntities().entities;
+				const auto eIt = ranges::find_if(entities, [&](
+						const EntityInText &e) {
+					return (e.type() == EntityType::Pre
+							|| e.type() == EntityType::Code)
+						&& (from >= e.offset())
+						&& ((e.offset() + e.length()) >= to);
+				});
+				if (eIt != entities.end()) {
+					from = eIt->offset();
+					to = eIt->offset() + eIt->length();
+					while (to > 0 && IsSpace(_text.at(to - 1))) {
+						--to;
+					}
+					if (to >= from) {
+						return { from, to };
+					}
+				}
+				break;
+			}
+
 			if (!IsParagraphSeparator(_text.at(from))) {
 				while (from > 0 && !IsParagraphSeparator(_text.at(from - 1))) {
 					--from;
