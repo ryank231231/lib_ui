@@ -543,6 +543,7 @@ bool WindowHelper::handleNativeEvent(
 			case HitTestResult::Left:        return HTLEFT;
 			case HitTestResult::TopLeft:     return HTTOPLEFT;
 
+			case HitTestResult::OnTop:
 			case HitTestResult::Minimize:
 			case HitTestResult::MaximizeRestore:
 			case HitTestResult::Close: return systemButtonHitTest(result);

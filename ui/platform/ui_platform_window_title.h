@@ -41,6 +41,7 @@ enum class HitTestResult {
 	BottomLeft,
 	Left,
 	TopLeft,
+	OnTop,
 };
 
 struct HitTestRequest {

@@ -241,6 +241,9 @@ void TitleControls::raise() {
 	_minimize->raise();
 	_maximizeRestore->raise();
 	_close->raise();
+	if (_top) {
+		_top->raise();
+	}
 }
 
 HitTestResult TitleControls::hitTest(QPoint point) const {
@@ -253,6 +256,8 @@ HitTestResult TitleControls::hitTest(QPoint point) const {
 		return HitTestResult::MaximizeRestore;
 	} else if (test(_close)) {
 		return HitTestResult::Close;
+	} else if (test(_top)) {
+		return HitTestResult::OnTop;
 	}
 	return HitTestResult::None;
 }
@@ -268,6 +273,7 @@ void TitleControls::buttonOver(HitTestResult testResult) {
 	update(_minimize, HitTestResult::Minimize);
 	update(_maximizeRestore, HitTestResult::MaximizeRestore);
 	update(_close, HitTestResult::Close);
+	update(_top, HitTestResult::OnTop);
 }
 
 void TitleControls::buttonDown(HitTestResult testResult) {
@@ -281,6 +287,7 @@ void TitleControls::buttonDown(HitTestResult testResult) {
 	update(_minimize, HitTestResult::Minimize);
 	update(_maximizeRestore, HitTestResult::MaximizeRestore);
 	update(_close, HitTestResult::Close);
+	update(_top, HitTestResult::OnTop);
 }
 
 TitleControls::Button *TitleControls::controlWidget(Control control) const {
