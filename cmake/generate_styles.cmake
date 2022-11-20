@@ -22,7 +22,7 @@ function(generate_styles target_name src_loc style_files dependent_style_files)
     BYPRODUCTS
         ${gen_files}
     COMMAND
-        codegen_style
+        "D:/tdesktop-aa64/tdesktop/build/x64/RelWithDebInfo/codegen_style.exe"
         -I${src_loc}
         -I${submodules_loc}/lib_ui
         -I${submodules_loc}/Resources

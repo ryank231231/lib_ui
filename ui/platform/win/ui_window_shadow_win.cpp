@@ -13,7 +13,10 @@
 
 #include <QtGui/QPainter>
 #include <QtWidgets/QApplication>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
 #include <QtWidgets/QDesktopWidget>
+#endif
 
 #include <windowsx.h>
 
@@ -170,7 +173,11 @@ void WindowShadow::init(QColor color) {
 		return;
 	}
 
+	#if (QT_VERSION > QT_VERSION_CHECK(6,0,0))
+	const auto avail = QApplication::primaryScreen()->availableGeometry();
+	#else
 	const auto avail = QApplication::desktop()->availableGeometry();
+	#endif
 	_widthMax = std::max(avail.width(), 1);
 	_heightMax = std::max(avail.height(), 1);
 

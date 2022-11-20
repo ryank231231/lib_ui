@@ -15,7 +15,7 @@ function(generate_palette target_name palette_file)
     BYPRODUCTS
         ${gen_files}
     COMMAND
-        codegen_style
+        "D:/tdesktop-aa64/tdesktop/build/x64/RelWithDebInfo/codegen_style.exe"
         -I${gen_dst}
         -o${gen_dst}/styles
         -t${gen_dst}/styles/palette

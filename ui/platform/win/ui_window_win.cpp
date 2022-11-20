@@ -134,10 +134,17 @@ public:
        void registerWindow(HWND handle, not_null<WindowHelper*> helper);
        void unregisterWindow(HWND handle);
 
+	   #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
        bool nativeEventFilter(
                const QByteArray &eventType,
                void *message,
                long *result) override;
+	   #else
+       bool nativeEventFilter(
+               const QByteArray &eventType,
+               void *message,
+               qintptr *result) override;
+	   #endif
 
 private:
        base::flat_map<HWND, not_null<WindowHelper*>> _windowByHandle;
@@ -157,7 +164,11 @@ void WindowHelper::NativeFilter::unregisterWindow(HWND handle) {
 bool WindowHelper::NativeFilter::nativeEventFilter(
                const QByteArray &eventType,
                void *message,
-               long *result) {
+	   #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+               long* *result) {
+	   #else
+               qintptr *result) {
+	   #endif
        auto filtered = false;
        const auto msg = static_cast<MSG*>(message);
        const auto i = _windowByHandle.find(msg->hwnd);

@@ -22,6 +22,7 @@
 #include <QtGui/QGuiApplication>
 #include <qpa/qplatformnativeinterface.h>
 #include <EGL/egl.h>
+// const char *EGLAPIENTRY eglQueryString (EGLDisplay dpy, EGLint name);
 #endif // Q_OS_WIN
 
 #define LOG_ONCE(x) [[maybe_unused]] static auto logged = [&] { LOG(x); return true; }();

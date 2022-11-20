@@ -20,7 +20,7 @@ function(generate_emoji target_name emoji_map suggestions_json)
     BYPRODUCTS
         ${gen_files}
     COMMAND
-        codegen_emoji
+        "D:/tdesktop-aa64/tdesktop/build/x64/RelWithDebInfo/codegen_emoji.exe"
         -o${gen_dst}
         ${gen_src}
     COMMENT "Generating emoji (${target_name})"
